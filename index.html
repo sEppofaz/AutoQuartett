@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Auto Quartett</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-title">
+        <span class="logo">🏎️</span>
+        <h1>Auto Quartett</h1>
+      </div>
+      <nav class="tabs">
+        <button class="tab active" data-tab="galerie">Galerie</button>
+        <button class="tab" data-tab="quartett">Quartett</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ── GALERIE ── -->
+    <section id="tab-galerie" class="tab-content active">
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">Alle <span class="filter-count" id="count-all"></span></button>
+        <button class="filter-btn" data-filter="legende">Legenden</button>
+        <button class="filter-btn" data-filter="supercar">Supercars</button>
+        <button class="filter-btn" data-filter="hypercar">Hypercars</button>
+        <button class="filter-btn" data-filter="elektro">Elektro</button>
+        <button class="filter-btn" data-filter="bmw_m">BMW M</button>
+      </div>
+      <div class="cards-grid" id="gallery-grid"></div>
+    </section>
+
+    <!-- ── QUARTETT ── -->
+    <section id="tab-quartett" class="tab-content">
+
+      <div id="q-start" class="q-screen">
+        <div class="start-card">
+          <div class="start-icon">🏁</div>
+          <h2>Quartett</h2>
+          <p>Du bekommst 17 Karten, der Computer 16.<br>
+             Wähle eine Kategorie – wer den besseren Wert hat, gewinnt die Karten.</p>
+          <ul class="rules-list">
+            <li>🏆 Höhere Zahl gewinnt (außer 0–100 und Leistungsgewicht)</li>
+            <li>🤝 Unentschieden → Karten auf den Stapel, nächste Runde entscheidet</li>
+            <li>🎯 Wer alle Karten hat, gewinnt</li>
+          </ul>
+          <button class="btn-primary" id="btn-start-game">Spiel starten</button>
+        </div>
+      </div>
+
+      <div id="q-game" class="q-screen hidden">
+        <div class="scorebar">
+          <div class="score-side">
+            <span class="score-name">Du</span>
+            <span class="score-num" id="score-player">17</span>
+            <span class="score-unit">Karten</span>
+          </div>
+          <div class="score-mid" id="round-label">Runde 1</div>
+          <div class="score-side right">
+            <span class="score-unit">Karten</span>
+            <span class="score-num" id="score-cpu">16</span>
+            <span class="score-name">CPU</span>
+          </div>
+        </div>
+
+        <div class="game-field">
+
+          <div class="cpu-area">
+            <div class="cpu-label">CPU-Karte</div>
+            <div id="cpu-zone">
+              <div class="card card-back" id="cpu-card-back">
+                <div class="card-back-inner">
+                  <span class="card-back-logo">🏎️</span>
+                  <span class="card-back-text">AUTO<br>QUARTETT</span>
+                </div>
+              </div>
+              <div id="cpu-card-reveal" class="hidden"></div>
+            </div>
+          </div>
+
+          <div id="round-result-banner" class="result-banner hidden"></div>
+
+          <div class="player-area">
+            <div class="player-label" id="player-label">Deine Karte – wähle eine Kategorie:</div>
+            <div id="player-card-display"></div>
+            <div class="category-buttons" id="category-buttons"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div id="q-end" class="q-screen hidden">
+        <div class="start-card">
+          <div class="start-icon" id="end-icon">🏆</div>
+          <h2 id="end-title"></h2>
+          <p id="end-text"></p>
+          <button class="btn-primary" id="btn-play-again">Nochmal spielen</button>
+          <button class="btn-secondary" id="btn-back-gallery">Zur Galerie</button>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
