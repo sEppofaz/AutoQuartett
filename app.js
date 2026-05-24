@@ -616,5 +616,10 @@ function handleSaveCar() {
   closeAddCarModal();
 }
 
+// ── Back-to-Top ───────────────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('back-top').classList.toggle('vis', window.scrollY > 300);
+}, { passive: true });
+
 // ── Start ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => { init(); registerSW(); });
