@@ -425,5 +425,53 @@ function endGame() {
       : `Die CPU hat ${game.cpuPile.length} Karten. Revanche?`;
 }
 
+// ── Service Worker & Update-Toast ────────────────────────────────────────────
+
+let _pendingReg = null;
+
+function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+
+  navigator.serviceWorker.register('/AutoQuartett/sw.js')
+    .then(reg => {
+      // Bei jedem App-Start nach Updates suchen
+      reg.update();
+
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          // Neue Version installiert, wartet auf Aktivierung
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            _pendingReg = reg;
+            showUpdateToast();
+          }
+        });
+      });
+    })
+    .catch(() => {}); // kein SW → kein Problem (z.B. localhost ohne HTTPS)
+
+  // Seite neu laden sobald neuer SW die Kontrolle übernimmt
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!reloading) { reloading = true; window.location.reload(); }
+  });
+}
+
+function showUpdateToast() {
+  if (document.getElementById('update-toast')) return;
+  const toast = document.createElement('div');
+  toast.id = 'update-toast';
+  toast.className = 'update-toast';
+  toast.innerHTML = `
+    <span class="update-toast-msg">🆕 Neue Version verfügbar</span>
+    <button class="update-toast-btn" onclick="activateUpdate()">Neu laden</button>
+    <button class="update-toast-close" onclick="this.closest('#update-toast').remove()">✕</button>`;
+  document.body.appendChild(toast);
+}
+
+function activateUpdate() {
+  if (_pendingReg?.waiting) _pendingReg.waiting.postMessage('SKIP_WAITING');
+}
+
 // ── Start ─────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => { init(); registerSW(); });
