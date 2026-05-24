@@ -443,32 +443,40 @@ function endGame() {
 // ── Service Worker & Update-Toast ────────────────────────────────────────────
 
 let _pendingReg = null;
+let _swReg      = null;
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
 
   navigator.serviceWorker.register('/AutoQuartett/sw.js', { updateViaCache: 'none' })
     .then(reg => {
-      // Bei jedem App-Start nach Updates suchen
+      _swReg = reg;
       reg.update();
-
-      reg.addEventListener('updatefound', () => {
-        const newSW = reg.installing;
-        newSW.addEventListener('statechange', () => {
-          // Neue Version installiert, wartet auf Aktivierung
-          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-            _pendingReg = reg;
-            showUpdateToast();
-          }
-        });
-      });
+      reg.addEventListener('updatefound', onUpdateFound);
     })
-    .catch(() => {}); // kein SW → kein Problem (z.B. localhost ohne HTTPS)
+    .catch(() => {});
 
-  // Seite neu laden sobald neuer SW die Kontrolle übernimmt
+  // iOS friert PWAs ein statt sie zu beenden – beim Aufwachen Update prüfen
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && _swReg) {
+      _swReg.update();
+    }
+  });
+
   let reloading = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!reloading) { reloading = true; window.location.reload(); }
+  });
+}
+
+function onUpdateFound() {
+  const newSW = _swReg.installing;
+  if (!newSW) return;
+  newSW.addEventListener('statechange', () => {
+    if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+      _pendingReg = _swReg;
+      showUpdateToast();
+    }
   });
 }
 
