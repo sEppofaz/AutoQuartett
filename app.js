@@ -447,7 +447,7 @@ let _pendingReg = null;
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
 
-  navigator.serviceWorker.register('/AutoQuartett/sw.js')
+  navigator.serviceWorker.register('/AutoQuartett/sw.js', { updateViaCache: 'none' })
     .then(reg => {
       // Bei jedem App-Start nach Updates suchen
       reg.update();
