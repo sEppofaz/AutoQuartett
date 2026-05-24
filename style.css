@@ -560,6 +560,51 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 12px 80px; }
 .flip-back { transform: rotateY(180deg); }
 
 /* ──────────────────────────────────────────
+   WEITER-BUTTON
+────────────────────────────────────────── */
+.btn-weiter {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 20px rgba(230,57,70,0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+  animation: weiterIn 0.3s ease;
+}
+
+.btn-weiter:hover  { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(230,57,70,0.5); }
+.btn-weiter:active { transform: scale(0.97); }
+
+.weiter-arrow {
+  font-size: 20px;
+  transition: transform 0.2s;
+}
+.btn-weiter:hover .weiter-arrow { transform: translateX(4px); }
+
+.swipe-hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  letter-spacing: 0.03em;
+}
+
+@keyframes weiterIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ──────────────────────────────────────────
    UTILITY
 ────────────────────────────────────────── */
 .hidden { display: none !important; }

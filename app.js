@@ -214,7 +214,22 @@ function startGame() {
     waiting:     false
   };
 
+  setupSwipe();
   nextRound();
+}
+
+function setupSwipe() {
+  const field = document.getElementById('q-game');
+  let touchStartX = 0;
+
+  field.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].clientX;
+  }, { passive: true });
+
+  field.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (dx < -60 && game?.waiting) proceedToNextRound();
+  }, { passive: true });
 }
 
 function showScreen(id) {
@@ -358,12 +373,22 @@ function compareCards(cat, playerCard, cpuCard) {
 
   game.round++;
   updateScoreBar();
+  showContinueButton();
+}
 
-  // Kurze Pause, dann nächste Runde
-  setTimeout(() => {
-    game.waiting = false;
-    nextRound();
-  }, result === 'draw' ? 1800 : 2500);
+function showContinueButton() {
+  const container = document.getElementById('category-buttons');
+  container.innerHTML = `
+    <button class="btn-weiter" id="btn-weiter" onclick="proceedToNextRound()">
+      Weiter <span class="weiter-arrow">→</span>
+    </button>
+    <div class="swipe-hint">oder nach links wischen</div>`;
+}
+
+function proceedToNextRound() {
+  if (!game || !game.waiting) return;
+  game.waiting = false;
+  nextRound();
 }
 
 function highlightStatOnCard(containerId, cat, winState) {
