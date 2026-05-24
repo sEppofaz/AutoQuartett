@@ -26,6 +26,9 @@ const ANTRIEB_LABEL = {
   hybrid:   'Hybrid'
 };
 
+const CUSTOM_CARS_KEY = 'aq_custom';
+const CAR_LOOKUP_URL  = 'https://umbenennen.duckdns.org/autoquartett/car-lookup';
+
 // ── State ────────────────────────────────────────────────────────────────────
 
 let allCars = [];
@@ -44,12 +47,14 @@ async function init() {
     return;
   }
 
+  allCars = [...allCars, ...loadCustomCars()];
   computeStatsRange();
   document.getElementById('count-all').textContent = allCars.length;
   renderGallery('all');
   setupTabs();
   setupFilters();
   setupGameButtons();
+  setupAddCarModal();
 }
 
 function showFetchError() {
@@ -101,9 +106,10 @@ function fmt(cat, value) {
 // ── Card HTML ─────────────────────────────────────────────────────────────────
 
 function buildCard(car, opts = {}) {
-  const { selectedCat = null, winState = null } = opts;
+  const { selectedCat = null, winState = null, showDelete = false } = opts;
   const catClass = 'cat-' + car.kategorie;
   const meta = CAT_META[car.kategorie] || { label: car.kategorie, emoji: '' };
+  const imgSrc = (car.bild && car.bild.startsWith('http')) ? car.bild : `images/${car.id}.jpg`;
 
   const statsHtml = CATEGORIES.map(cat => {
     const val = car[cat.key];
@@ -125,7 +131,8 @@ function buildCard(car, opts = {}) {
   return `
     <div class="card ${catClass}">
       <div class="card-image">
-        <img src="images/${car.id}.jpg"
+        ${car.custom ? '<span class="card-custom-badge">✨ Eigene</span>' : ''}
+        <img src="${imgSrc}"
              alt="${car.name}"
              loading="lazy"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -148,6 +155,7 @@ function buildCard(car, opts = {}) {
           <span class="antrieb-badge antrieb-${car.antrieb}">${ANTRIEB_LABEL[car.antrieb] || car.antrieb}</span>
           <span class="card-country">${car.land}</span>
         </div>
+        ${showDelete ? `<button class="card-delete-btn" data-id="${car.id}">🗑 Löschen</button>` : ''}
       </div>
     </div>`;
 }
@@ -159,8 +167,15 @@ let activeFilter = 'all';
 function renderGallery(filter) {
   activeFilter = filter;
   const grid = document.getElementById('gallery-grid');
-  const filtered = filter === 'all' ? allCars : allCars.filter(c => c.kategorie === filter);
-  grid.innerHTML = filtered.map(car => buildCard(car)).join('');
+  let filtered;
+  if (filter === 'all') filtered = allCars;
+  else if (filter === 'eigene') filtered = allCars.filter(c => c.custom);
+  else filtered = allCars.filter(c => c.kategorie === filter);
+
+  grid.innerHTML = filtered.map(car => buildCard(car, { showDelete: !!car.custom })).join('');
+  grid.querySelectorAll('.card-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteCustomCar(btn.dataset.id));
+  });
 }
 
 function setupFilters() {
@@ -471,6 +486,134 @@ function showUpdateToast() {
 
 function activateUpdate() {
   if (_pendingReg?.waiting) _pendingReg.waiting.postMessage('SKIP_WAITING');
+}
+
+// ── Custom Cars ───────────────────────────────────────────────────────────────
+
+function loadCustomCars() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_CARS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function deleteCustomCar(id) {
+  if (!confirm('Dieses Auto aus der Sammlung löschen?')) return;
+  const customs = loadCustomCars().filter(c => c.id !== id);
+  localStorage.setItem(CUSTOM_CARS_KEY, JSON.stringify(customs));
+  allCars = allCars.filter(c => c.id !== id);
+  computeStatsRange();
+  document.getElementById('count-all').textContent = allCars.length;
+  updateEigeneFilterVisibility();
+  if (activeFilter === 'eigene' && !allCars.some(c => c.custom)) {
+    document.querySelector('.filter-btn[data-filter="all"]').click();
+  } else {
+    renderGallery(activeFilter);
+  }
+}
+
+function updateEigeneFilterVisibility() {
+  const btn = document.getElementById('btn-filter-eigene');
+  if (btn) btn.style.display = allCars.some(c => c.custom) ? '' : 'none';
+}
+
+// ── Add Car Modal ─────────────────────────────────────────────────────────────
+
+let _previewCar = null;
+
+function setupAddCarModal() {
+  document.getElementById('btn-add-car').addEventListener('click', openAddCarModal);
+  document.getElementById('modal-close').addEventListener('click', closeAddCarModal);
+  document.getElementById('btn-lookup-car').addEventListener('click', handleLookup);
+  document.getElementById('car-name-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLookup();
+  });
+  document.getElementById('btn-save-car').addEventListener('click', handleSaveCar);
+  document.getElementById('btn-discard-car').addEventListener('click', discardPreview);
+  document.getElementById('add-car-modal').addEventListener('click', e => {
+    if (e.target.id === 'add-car-modal') closeAddCarModal();
+  });
+  updateEigeneFilterVisibility();
+}
+
+function openAddCarModal() {
+  document.getElementById('add-car-modal').classList.remove('hidden');
+  resetModalState();
+  setTimeout(() => document.getElementById('car-name-input').focus(), 100);
+}
+
+function closeAddCarModal() {
+  document.getElementById('add-car-modal').classList.add('hidden');
+  _previewCar = null;
+}
+
+function resetModalState() {
+  document.getElementById('car-name-input').value = '';
+  document.getElementById('modal-loading').classList.add('hidden');
+  document.getElementById('modal-error').classList.add('hidden');
+  document.getElementById('modal-preview').classList.add('hidden');
+  document.getElementById('modal-actions').classList.add('hidden');
+  _previewCar = null;
+}
+
+function discardPreview() {
+  _previewCar = null;
+  document.getElementById('modal-preview').classList.add('hidden');
+  document.getElementById('modal-actions').classList.add('hidden');
+  document.getElementById('modal-error').classList.add('hidden');
+  document.getElementById('car-name-input').value = '';
+  document.getElementById('car-name-input').focus();
+}
+
+async function handleLookup() {
+  const name = document.getElementById('car-name-input').value.trim();
+  if (!name) return;
+
+  const loadingEl = document.getElementById('modal-loading');
+  const errorEl   = document.getElementById('modal-error');
+  const previewEl = document.getElementById('modal-preview');
+  const actionsEl = document.getElementById('modal-actions');
+  const searchBtn = document.getElementById('btn-lookup-car');
+
+  loadingEl.classList.remove('hidden');
+  errorEl.classList.add('hidden');
+  previewEl.classList.add('hidden');
+  actionsEl.classList.add('hidden');
+  searchBtn.disabled = true;
+  _previewCar = null;
+
+  try {
+    const res = await fetch(CAR_LOOKUP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server-Fehler');
+
+    if (allCars.some(c => c.id === data.id)) data.id += '_' + Date.now();
+    _previewCar = data;
+    previewEl.innerHTML = buildCard(data);
+    previewEl.classList.remove('hidden');
+    actionsEl.classList.remove('hidden');
+  } catch (e) {
+    errorEl.textContent = '⚠️ ' + e.message;
+    errorEl.classList.remove('hidden');
+  } finally {
+    loadingEl.classList.add('hidden');
+    searchBtn.disabled = false;
+  }
+}
+
+function handleSaveCar() {
+  if (!_previewCar) return;
+  const customs = loadCustomCars();
+  customs.push(_previewCar);
+  localStorage.setItem(CUSTOM_CARS_KEY, JSON.stringify(customs));
+  allCars.push(_previewCar);
+  computeStatsRange();
+  document.getElementById('count-all').textContent = allCars.length;
+  updateEigeneFilterVisibility();
+  renderGallery(activeFilter);
+  closeAddCarModal();
 }
 
 // ── Start ─────────────────────────────────────────────────────────────────────

@@ -43,6 +43,8 @@
         <button class="filter-btn" data-filter="hypercar">Hypercars</button>
         <button class="filter-btn" data-filter="elektro">Elektro</button>
         <button class="filter-btn" data-filter="bmw_m">BMW M</button>
+        <button class="filter-btn" data-filter="eigene" id="btn-filter-eigene" style="display:none">✨ Eigene</button>
+        <button class="add-car-btn" id="btn-add-car">+ Auto</button>
       </div>
       <div class="cards-grid" id="gallery-grid"></div>
     </section>
@@ -118,6 +120,29 @@
 
     </section>
   </main>
+
+  <!-- ── AUTO HINZUFÜGEN MODAL ── -->
+  <div id="add-car-modal" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <button class="modal-close" id="modal-close">✕</button>
+      <h2 class="modal-title">🔍 Auto hinzufügen</h2>
+      <p class="modal-hint">Gib einen Autonamen ein – Claude erstellt die vollständige Karte automatisch.</p>
+      <div class="modal-search">
+        <input type="text" id="car-name-input" placeholder="z.B. Bugatti Chiron Super Sport" autocomplete="off" spellcheck="false">
+        <button class="modal-search-btn" id="btn-lookup-car">Suchen</button>
+      </div>
+      <div id="modal-loading" class="modal-loading hidden">
+        <div class="spinner"></div>
+        <span>Claude erstellt die Karte …</span>
+      </div>
+      <div id="modal-error" class="modal-error hidden"></div>
+      <div id="modal-preview" class="modal-preview hidden"></div>
+      <div id="modal-actions" class="modal-actions hidden">
+        <button class="btn-primary" id="btn-save-car">✅ Zur Sammlung hinzufügen</button>
+        <button class="btn-secondary" id="btn-discard-car">Nochmal suchen</button>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
