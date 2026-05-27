@@ -56,13 +56,24 @@
         <div class="start-card">
           <div class="start-icon">🏁</div>
           <h2>Quartett</h2>
-          <p>Du bekommst 17 Karten, der Computer 16.<br>
+          <p>Wähle die Spielgröße – die Karten werden zufällig verteilt.<br>
              Wähle eine Kategorie – wer den besseren Wert hat, gewinnt die Karten.</p>
           <ul class="rules-list">
             <li>🏆 Höhere Zahl gewinnt (außer 0–100 und Leistungsgewicht)</li>
             <li>🤝 Unentschieden → Karten auf den Stapel, nächste Runde entscheidet</li>
             <li>🎯 Wer alle Karten hat, gewinnt</li>
           </ul>
+          <div class="card-count-picker">
+            <div class="picker-label">Spielgröße (Karten gesamt)</div>
+            <div class="picker-row">
+              <button class="picker-btn active" data-count="all">Alle</button>
+              <button class="picker-btn" data-count="5">5</button>
+              <button class="picker-btn" data-count="8">8</button>
+              <button class="picker-btn" data-count="10">10</button>
+              <button class="picker-btn" data-count="15">15</button>
+              <button class="picker-btn" data-count="20">20</button>
+            </div>
+          </div>
           <button class="btn-primary" id="btn-start-game">Spiel starten</button>
         </div>
       </div>
@@ -71,13 +82,16 @@
         <div class="scorebar">
           <div class="score-side">
             <span class="score-name">Du</span>
-            <span class="score-num" id="score-player">17</span>
+            <span class="score-num" id="score-player">–</span>
             <span class="score-unit">Karten</span>
           </div>
-          <div class="score-mid" id="round-label">Runde 1</div>
+          <div class="score-mid">
+            <div id="round-label">Runde 1</div>
+            <div class="wins-display" id="wins-display">🏆 0:0</div>
+          </div>
           <div class="score-side right">
             <span class="score-unit">Karten</span>
-            <span class="score-num" id="score-cpu">16</span>
+            <span class="score-num" id="score-cpu">–</span>
             <span class="score-name">CPU</span>
           </div>
         </div>
@@ -109,12 +123,16 @@
       </div>
 
       <div id="q-end" class="q-screen hidden">
-        <div class="start-card">
-          <div class="start-icon" id="end-icon">🏆</div>
-          <h2 id="end-title"></h2>
-          <p id="end-text"></p>
-          <button class="btn-primary" id="btn-play-again">Nochmal spielen</button>
-          <button class="btn-secondary" id="btn-back-gallery">Zur Galerie</button>
+        <div class="end-fullscreen" id="end-fullscreen">
+          <div class="end-main">
+            <div class="end-icon" id="end-icon">🏆</div>
+            <h2 class="end-title" id="end-title"></h2>
+            <div class="end-stats" id="end-stats"></div>
+          </div>
+          <div class="end-actions">
+            <button class="btn-primary" id="btn-play-again">Nochmal spielen</button>
+            <button class="btn-secondary" id="btn-back-gallery">Zur Galerie</button>
+          </div>
         </div>
       </div>
 

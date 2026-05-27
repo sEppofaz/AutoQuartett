@@ -462,7 +462,15 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 12px 80px; }
 .score-name { font-size: 12px; font-weight: 600; color: var(--muted); }
 .score-num  { font-size: 28px; font-weight: 800; color: #fff; }
 .score-unit { font-size: 11px; color: var(--muted); }
-.score-mid  { font-size: 13px; font-weight: 700; color: var(--muted); }
+.score-mid  { font-size: 13px; font-weight: 700; color: var(--muted); text-align: center; }
+
+.wins-display {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 3px;
+  letter-spacing: 0.03em;
+}
 
 /* Game field */
 .game-field {
@@ -660,6 +668,187 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 12px 80px; }
 
 @keyframes weiterIn {
   from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ──────────────────────────────────────────
+   CARD COUNT PICKER
+────────────────────────────────────────── */
+.card-count-picker {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.picker-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.picker-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.picker-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 44px;
+}
+
+.picker-btn.active {
+  background: rgba(230,57,70,0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.picker-btn:hover:not(.active) {
+  background: rgba(255,255,255,0.1);
+  color: var(--text);
+}
+
+/* ──────────────────────────────────────────
+   END SCREEN (Vollbild)
+────────────────────────────────────────── */
+.end-fullscreen {
+  min-height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 48px 24px 40px;
+  border-radius: 20px;
+  margin: 8px 0 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.end-fullscreen.end-win {
+  background: linear-gradient(160deg, #07200f 0%, #041509 100%);
+  border-color: rgba(46,204,113,0.35);
+}
+
+.end-fullscreen.end-lose {
+  background: linear-gradient(160deg, #200707 0%, #150404 100%);
+  border-color: rgba(231,76,60,0.35);
+}
+
+.end-fullscreen.end-draw {
+  background: linear-gradient(160deg, #201507 0%, #150e04 100%);
+  border-color: rgba(243,156,18,0.35);
+}
+
+.end-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  text-align: center;
+}
+
+.end-icon {
+  font-size: 96px;
+  line-height: 1;
+  animation: endIconIn 0.55s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.end-title {
+  font-size: 52px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  animation: endTitleIn 0.4s ease 0.1s both;
+}
+
+.end-fullscreen.end-win  .end-title { color: var(--win); }
+.end-fullscreen.end-lose .end-title { color: var(--lose); }
+.end-fullscreen.end-draw .end-title { color: var(--draw); }
+
+.end-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 300px;
+  animation: endStatsIn 0.4s ease 0.2s both;
+}
+
+.end-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+
+.end-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 72px;
+}
+
+.end-stat-num {
+  font-size: 36px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+.end-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.end-stat-divider {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.end-actions {
+  width: 100%;
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@keyframes endIconIn {
+  from { transform: scale(0.2) rotate(-15deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes endTitleIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes endStatsIn {
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 

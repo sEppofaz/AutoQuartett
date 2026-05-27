@@ -34,6 +34,7 @@ const CAR_LOOKUP_URL  = 'https://umbenennen.duckdns.org/autoquartett/car-lookup'
 let allCars = [];
 let statsRange = {};   // { key: { min, max } }
 let game = null;
+let selectedCardCount = null; // null = alle Karten
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 
@@ -54,6 +55,7 @@ async function init() {
   setupTabs();
   setupFilters();
   setupGameButtons();
+  setupCardCountPicker();
   setupAddCarModal();
 }
 
@@ -203,6 +205,17 @@ function setupTabs() {
 
 // ── Quartett – Setup ──────────────────────────────────────────────────────────
 
+function setupCardCountPicker() {
+  document.querySelectorAll('.picker-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.picker-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const val = btn.dataset.count;
+      selectedCardCount = val === 'all' ? null : parseInt(val, 10);
+    });
+  });
+}
+
 function setupGameButtons() {
   document.getElementById('btn-start-game').addEventListener('click', startGame);
   document.getElementById('btn-play-again').addEventListener('click', startGame);
@@ -220,13 +233,21 @@ function startGame() {
   showScreen('q-game');
 
   const shuffled = [...allCars].sort(() => Math.random() - 0.5);
+  const totalCards = selectedCardCount !== null
+    ? Math.min(selectedCardCount, shuffled.length)
+    : shuffled.length;
+  const subset = shuffled.slice(0, totalCards);
+  const playerCount = Math.ceil(totalCards / 2);
+
   game = {
-    playerPile:  shuffled.slice(0, 17),
-    cpuPile:     shuffled.slice(17),
+    playerPile:   subset.slice(0, playerCount),
+    cpuPile:      subset.slice(playerCount),
     pendingCards: [],
-    round:       1,
-    playerTurn:  true,
-    waiting:     false
+    round:        1,
+    playerWins:   0,
+    cpuWins:      0,
+    playerTurn:   true,
+    waiting:      false
   };
 
   setupSwipe();
@@ -258,6 +279,7 @@ function updateScoreBar() {
   document.getElementById('score-player').textContent = game.playerPile.length;
   document.getElementById('score-cpu').textContent    = game.cpuPile.length;
   document.getElementById('round-label').textContent  = 'Runde ' + game.round;
+  document.getElementById('wins-display').textContent = '🏆 ' + game.playerWins + ':' + game.cpuWins;
 }
 
 function nextRound() {
@@ -373,12 +395,14 @@ function compareCards(cat, playerCard, cpuCard) {
     game.playerPile.push(...game.pendingCards, game.playerPile.shift(), game.cpuPile.shift());
     game.pendingCards = [];
     game.playerTurn = true;
+    game.playerWins++;
   } else if (result === 'lose') {
     banner.classList.add('lose');
     banner.innerHTML = `💥 CPU gewinnt diese Runde. <strong>${cat.label}:</strong> ${fmt(cat, pVal)} vs ${fmt(cat, cVal)}${pendingInfo}`;
     game.cpuPile.push(...game.pendingCards, game.playerPile.shift(), game.cpuPile.shift());
     game.pendingCards = [];
     game.playerTurn = false;
+    game.cpuWins++;
   } else {
     banner.classList.add('draw');
     banner.innerHTML = `🤝 Unentschieden! Beide Karten kommen auf den Stapel.${pendingInfo}`;
@@ -428,16 +452,40 @@ function highlightStatOnCard(containerId, cat, winState) {
 
 function endGame() {
   showScreen('q-end');
-  const playerWon = game.playerPile.length > game.cpuPile.length;
-  const draw = game.playerPile.length === game.cpuPile.length;
+  const playerCards = game.playerPile.length;
+  const cpuCards    = game.cpuPile.length;
+  const draw        = playerCards === cpuCards;
+  const playerWon   = playerCards > cpuCards;
+
+  const endEl = document.getElementById('end-fullscreen');
+  endEl.className = 'end-fullscreen ' + (draw ? 'end-draw' : playerWon ? 'end-win' : 'end-lose');
 
   document.getElementById('end-icon').textContent  = draw ? '🤝' : playerWon ? '🏆' : '💀';
-  document.getElementById('end-title').textContent = draw ? 'Unentschieden!' : playerWon ? 'Du gewinnst!' : 'CPU gewinnt!';
-  document.getElementById('end-text').textContent  = draw
-    ? 'Beide haben gleich viele Karten. Nochmal?'
-    : playerWon
-      ? `Du hast alle ${game.playerPile.length} Karten gesammelt. Respekt!`
-      : `Die CPU hat ${game.cpuPile.length} Karten. Revanche?`;
+  document.getElementById('end-title').textContent = draw ? 'Unentschieden' : playerWon ? 'Gewonnen!' : 'Verloren!';
+
+  document.getElementById('end-stats').innerHTML = `
+    <div class="end-stat-row">
+      <div class="end-stat">
+        <span class="end-stat-num">${game.playerWins}</span>
+        <span class="end-stat-label">Runden du</span>
+      </div>
+      <div class="end-stat-divider">:</div>
+      <div class="end-stat">
+        <span class="end-stat-num">${game.cpuWins}</span>
+        <span class="end-stat-label">Runden CPU</span>
+      </div>
+    </div>
+    <div class="end-stat-row">
+      <div class="end-stat">
+        <span class="end-stat-num">${playerCards}</span>
+        <span class="end-stat-label">Karten du</span>
+      </div>
+      <div class="end-stat-divider">vs</div>
+      <div class="end-stat">
+        <span class="end-stat-num">${cpuCards}</span>
+        <span class="end-stat-label">Karten CPU</span>
+      </div>
+    </div>`;
 }
 
 // ── Service Worker & Update-Toast ────────────────────────────────────────────

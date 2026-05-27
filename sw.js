@@ -1,7 +1,7 @@
 // ── Auto Quartett – Service Worker ────────────────────────────────────────────
 // CACHE_NAME hochzählen (v2, v3 …) wenn Daten/Code sich ändern und alle
 // Nutzer die neue Version bekommen sollen.
-const CACHE_NAME = 'autoquartett-v3';
+const CACHE_NAME = 'autoquartett-v4';
 
 const PRECACHE = [
   '/AutoQuartett/',
