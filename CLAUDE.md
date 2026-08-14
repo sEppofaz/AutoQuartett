@@ -20,7 +20,7 @@ git add -p && git commit -m "..." && git push
 GitHub Pages deployed automatisch aus `main`. Keine Server-Restarts nötig.
 
 **Nach jeder Änderung an app.js / style.css / index.html:**
-→ `sw.js` CACHE_NAME hochzählen (v3 → v4 …) damit PWA das Update erkennt.
+→ `sw.js` CACHE_NAME hochzählen (aktuell: `autoquartett-v4`) damit PWA das Update erkennt.
 
 ---
 
@@ -90,6 +90,19 @@ ssh root@89.167.104.145 "git -C /opt/rename-webhook pull && systemctl restart re
 
 ---
 
+## Spielmodus – State-Variablen (app.js)
+
+| Variable | Typ | Bedeutung |
+|----------|-----|-----------|
+| `selectedCardCount` | `null \| number` | Gewählte Gesamtkartenanzahl (null = alle); gesetzt via Picker (5/8/10/15/20) |
+| `game.playerWins` | `number` | Gewonnene Runden des Spielers (für Score-Anzeige `🏆 X:Y`) |
+| `game.cpuWins` | `number` | Gewonnene Runden der CPU |
+| `game.playerPile` | `Car[]` | Aktuelle Karten des Spielers |
+| `game.cpuPile` | `Car[]` | Aktuelle Karten der CPU |
+| `game.pendingCards` | `Car[]` | Karten auf Stapel bei Unentschieden |
+
+**Spielende:** wenn `playerPile.length === 0` oder `cpuPile.length === 0` → `endGame()` → `.end-fullscreen` mit Klasse `end-win` / `end-lose` / `end-draw`.
+
 ## localStorage Keys
 
 | Key | Inhalt |
@@ -104,6 +117,7 @@ ssh root@89.167.104.145 "git -C /opt/rename-webhook pull && systemctl restart re
 - **`updateViaCache: 'none'`** in `register()` – GitHub Pages cached sw.js, ohne diese Option erkennt iOS-PWA kein Update
 - **`visibilitychange`-Handler** ruft `reg.update()` auf – iOS friert PWAs ein statt zu beenden, DOMContentLoaded läuft nicht neu durch
 - **`reg.update()`** wird bereits beim App-Start aufgerufen – reicht für Browser, nicht für iOS PWA allein
+- **Tab-Leiste (`.tabs`, Galerie/Quartett) seit 2026-08-14 am unteren Bildschirmrand fixiert** (PKA-Standard, `PKA/BKM/PWA-Standards.md` „Tab-Leiste am unteren Bildschirmrand"), vorher Segmented-Control neben dem Titel im Header. `.tabs` z-index bewusst `180` (nicht `250` wie in den Referenz-Apps) – `.modal-overlay` hier hat `z-index:200` und muss über der Tab-Leiste liegen, sonst wäre der Auto-hinzufügen-Dialog teilweise verdeckt. **Regel für künftige Apps mit dieser Umstellung:** immer alle bestehenden `z-index`-Werte prüfen, Tab-Leiste muss unter Overlays/Modals, aber über normalem Content liegen.
 
 ---
 
